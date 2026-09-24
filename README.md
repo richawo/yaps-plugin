@@ -28,7 +28,7 @@ Every export goes to a new file. Your originals are never overwritten.
 
 1. [Download Yaps](https://yaps.ai/download) for macOS or Windows, open it, and sign in. New accounts start with a free trial; some features need Yaps Pro.
 2. Install [Node.js](https://nodejs.org) 22 or newer on the computer running Yaps. The current v2.4.0 release needs it for skill commands, and the MCP tools use it on every version.
-3. Install the plugin. In Cursor, run `/add-plugin yaps`. In Grok Bot, open **Plugins** in the sidebar and search for Yaps.
+3. After marketplace approval, install the plugin. In Cursor, run `/add-plugin yaps`. In Grok Bot, open **Plugins** in the sidebar and search for Yaps.
 4. **Grok Bot with Yaps on your computer:** allow commands on your computer in **Settings > General > Agent > Execution on Local Computer**. Keep the default, **Ask every time**, if you want to approve each command. This setting is not needed if you choose the optional Bot computer setup below.
 5. Ask your agent to check that Yaps is ready. When a feature needs a model download, the agent tells you the size and asks first.
 
