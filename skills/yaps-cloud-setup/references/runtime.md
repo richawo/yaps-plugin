@@ -46,9 +46,8 @@ Once per session, on the computer where the work will run, check it:
   installed.
 - If the tool is missing that command (Yaps 2.4.0 and older), `<yaps>` means
   the adapter below. It finds and checks the installed Yaps itself, and needs
-  Node.js 22 or newer. If Node is missing too, suggest updating Yaps from
-  [yaps.ai/download](https://yaps.ai/download), which removes the need for it.
-  Do not install Node silently.
+  Node.js 22 or newer. If Node is missing too, direct the user to install it
+  from [nodejs.org](https://nodejs.org). Do not install Node silently.
 - If neither works, Yaps is not reachable from where the command ran; see
   "Where Yaps runs" above.
 
