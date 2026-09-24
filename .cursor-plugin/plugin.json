@@ -23,5 +23,13 @@
     "local-ai",
     "memory"
   ],
+  "category": "productivity",
+  "tags": [
+    "transcription",
+    "video",
+    "audio",
+    "local-ai",
+    "productivity"
+  ],
   "skills": "./skills/"
 }
