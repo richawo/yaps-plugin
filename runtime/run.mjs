@@ -288,6 +288,29 @@ export async function readRequest(path, { stdin } = {}) {
   }
 }
 
+const WORKFLOWS = { "transcribe-file": transcribeFile, "srt-file": subtitleFile, "meeting-file": meetingFile };
+const ADAPTER_VERBS = new Set(["--", "--args-file", "request", ...Object.keys(WORKFLOWS)]);
+
+// Yaps CLIs newer than 2.4.0 answer `request` themselves; this mirrors that
+// surface so a skill can call either one with the same command.
+async function requestMode(source, options) {
+  const request = await readRequest(source);
+  if (Array.isArray(request)) return runYaps(stripRedact(request), options);
+  if (request && typeof request === "object" && Object.hasOwn(WORKFLOWS, request.workflow)) {
+    const { workflow, ...rest } = request;
+    return { code: 0, result: await WORKFLOWS[workflow](rest, { signal: options.signal }) };
+  }
+  throw new AdapterError("invalid_request", "Send a JSON array of Yaps arguments or a {\"workflow\": ...} object.", 2);
+}
+
+// The adapter's own `auth status` is always redacted; older CLIs do not know
+// the flag, so drop it rather than forward an unknown option.
+export function stripRedact(args) {
+  const words = args.filter((arg) => arg !== "--pretty");
+  return words.length === 3 && words[0] === "auth" && words[1] === "status" && words[2] === "--redact"
+    ? args.filter((arg) => arg !== "--redact") : args;
+}
+
 export async function main(argv) {
   const controller = new AbortController();
   const cancel = () => controller.abort();
@@ -295,7 +318,16 @@ export async function main(argv) {
   process.once("SIGTERM", cancel);
   try {
     let result;
-    if (argv[0] === "--" || (argv[0] === "--args-file" && argv.length === 2)) {
+    if (argv[0] === "request" && argv.length <= 2) {
+      const execution = await requestMode(argv[1] ?? "-", { signal: controller.signal });
+      result = execution.result;
+      process.exitCode = execution.code;
+    } else if (argv.length && !ADAPTER_VERBS.has(argv[0])) {
+      // Plain Yaps arguments, exactly as the installed CLI would take them.
+      const execution = await runYaps(stripRedact(argv), { signal: controller.signal });
+      result = execution.result;
+      process.exitCode = execution.code;
+    } else if (argv[0] === "--" || (argv[0] === "--args-file" && argv.length === 2)) {
       const args = argv[0] === "--" ? argv.slice(1) : await readRequest(argv[1]);
       const execution = await runYaps(args, { signal: controller.signal });
       result = execution.result;
@@ -305,7 +337,7 @@ export async function main(argv) {
       if (!request || Array.isArray(request) || typeof request !== "object") throw new AdapterError("invalid_request", "The request must contain a JSON object.", 2);
       result = await ({"transcribe-file":transcribeFile, "srt-file":subtitleFile, "meeting-file":meetingFile}[argv[0]])(request, { signal: controller.signal });
     } else {
-      throw new AdapterError("usage", "Usage: node run.mjs -- <Yaps arguments> | --args-file <JSON array file or -> | transcribe-file <JSON object file or -> | srt-file <JSON object file or -> | meeting-file <JSON object file or -> (- reads stdin)", 2);
+      throw new AdapterError("usage", "Usage: node run.mjs <Yaps arguments> | request [-|<JSON file>] | -- <Yaps arguments> | --args-file <JSON array file or -> | transcribe-file|srt-file|meeting-file <JSON object file or -> (- reads stdin)", 2);
     }
     if (result !== undefined) process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   } catch (error) {
