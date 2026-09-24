@@ -119,15 +119,20 @@ export async function runYaps(args, { discovery, capture = false, allowArray = f
   if (invocation.result) return capture ? invocation.result : { code: 0, result: invocation.result };
   const execution = await execute(invocation.command, invocation.args, { env: invocation.env, capture, signal });
   if (!capture) return execution;
+  // Yaps exit codes: 1 error, 2 usage, 3 not_found, 4 conflict, 75 busy,
+  // 130 cancelled. Current builds also print {"error","error_code"} on
+  // stdout; older builds print plain text on stderr with an empty stdout.
+  const exitCode = execution.code === 0 ? 1 : execution.code;
   let result;
   try { result = JSON.parse(execution.stdout); } catch {
-    throw new AdapterError("invalid_engine_response", `Yaps did not return a JSON result (exit ${execution.code}). Retry the same command through CLI mode to inspect the engine's recovery guidance.`);
+    if (execution.code === 130) throw new AdapterError("cancelled", "The Yaps operation was cancelled before completion.", 130);
+    throw new AdapterError("invalid_engine_response", `Yaps did not return a JSON result (exit ${execution.code}). Retry the same command through CLI mode to inspect the engine's recovery guidance.`, exitCode);
   }
   if (execution.code !== 0 || !result || (Array.isArray(result) && !allowArray) || typeof result !== "object"
       || result.error || result.success === false) {
     const safeCode = typeof result?.error_code === "string" && /^[a-z0-9_]{1,80}$/.test(result.error_code)
       ? result.error_code : "engine_failed";
-    throw new AdapterError(safeCode, `Yaps did not complete the operation (${safeCode}). No successful result was recorded.`);
+    throw new AdapterError(safeCode, `Yaps did not complete the operation (${safeCode}). No successful result was recorded.`, safeCode === "cancelled" ? 130 : exitCode);
   }
   return result;
 }

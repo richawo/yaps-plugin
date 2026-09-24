@@ -862,6 +862,9 @@ export function commandRequiresActiveAccount(args) {
   if (command.includes("--help") || command.includes("-h")) return false;
   if (!command.length || ["status", "settings", "auth"].includes(command[0])) return false;
   if (command[0] === "features" && command[1] === "list") return false;
+  // Reading, waiting on or cancelling already-queued background jobs must keep
+  // working if access lapses mid-job; only `jobs retry` queues new work.
+  if (command[0] === "jobs" && command[1] !== "retry") return false;
   return true;
 }
 
