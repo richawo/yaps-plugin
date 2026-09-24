@@ -44,7 +44,7 @@ Once per session, on the computer where the work will run, check it:
 
 - If that prints help, `<yaps>` means `"<yaps-cli>"`. Nothing else needs to be
   installed.
-- If the tool is missing that command (Yaps 2.4.0 and older), `<yaps>` means
+- If the tool is missing that command, `<yaps>` means
   the adapter below. It finds and checks the installed Yaps itself, and needs
   Node.js 22 or newer. If Node is missing too, direct the user to install it
   from [nodejs.org](https://nodejs.org). Do not install Node silently.
@@ -55,7 +55,7 @@ Once per session, on the computer where the work will run, check it:
 is installed:
 
 ```text
-npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/c2f69d86c2bbbe0c8bda901f77cf26671f8ad051 yaps-agent
+npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/b3e00c4e1d25e8b55aba8ff0a6e970a35048e692 yaps-agent
 ```
 
 It fetches this plugin's own adapter from one pinned public commit of

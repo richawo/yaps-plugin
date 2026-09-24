@@ -1,8 +1,8 @@
 {
   "name": "yaps",
   "displayName": "Yaps",
-  "version": "1.0.0",
-  "description": "Supercharge Grok Bot and Cursor with powerful local AI tools from Yaps. Transcribe audio and video, write speaker-labelled meeting notes, caption and tighten videos, make subtitles, translate, create voice-overs, clean up audio, remove image backgrounds, generate images, and search your private notes with Yaps on your computer.",
+  "version": "1.0.1",
+  "description": "Use Yaps to transcribe recordings, write meeting notes, add captions, create voice-overs, translate, edit media, and search your private notes. Choose a focused skill or the full toolkit. Install Yaps and sign in to start. Gated features need an active free trial or Yaps Pro.",
   "author": {
     "name": "Yaps AI",
     "email": "support@yaps.ai"

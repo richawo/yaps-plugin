@@ -30,7 +30,7 @@ Run these on the Bot's own computer with normal command execution, not local-com
 
    `needs_root` means the Bot's computer does not allow passwordless root; explain that and stop. `unsupported_platform` or `unsupported_distribution` means this computer cannot run the Linux package.
 
-2. From here, `<yaps>` means `/usr/bin/yaps_cli` (check it with `/usr/bin/yaps_cli request --help`). Signing in without the app window needs `/usr/bin/yaps_cli auth --help` to list `login` and `verify`. If it does not, say that this needs a newer Yaps than 2.4.0 and stop.
+2. From here, `<yaps>` means `/usr/bin/yaps_cli` (check it with `/usr/bin/yaps_cli request --help`). Signing in without the app window needs `/usr/bin/yaps_cli auth --help` to list `login` and `verify`. If either capability is missing, explain that the installed package needs an update and stop before asking for an email or code. Do not infer support from a version number alone.
 
 3. Ask the user for the email address of their Yaps account, then send the code. Pass the address in a JSON request, never spliced into the command:
 
@@ -40,7 +40,7 @@ Run these on the Bot's own computer with normal command execution, not local-com
    YAPS_REQUEST
    ```
 
-   `already_sent: true` means a code emailed moments ago is still valid. A `Sign-in conflict` means this computer is already signed in; show which account and ask before running `<yaps> auth logout`.
+   `already_sent: true` means a code emailed moments ago is still valid. A `Sign-in conflict` means this computer is already signed in; tell the user and ask before running `<yaps> auth logout`. Do not expose account details to identify it.
 
 4. Ask the user for the code from the email, then finish signing in:
 
