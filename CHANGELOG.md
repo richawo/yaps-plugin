@@ -7,4 +7,4 @@
   video to audio, notes memory, and dictation, using the Yaps desktop app on the user's computer.
 - Works in Cursor and in Grok Bot through local-computer execution.
 - MCP servers for the full Yaps toolset, and `yaps-cloud-setup`, which installs a verified
-  Yaps package on Grok Bot's own Linux computer and signs it in with an emailed code.
+  Yaps package on Grok Bot's own Linux computer when a compatible Yaps release is available.

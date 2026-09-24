@@ -1,6 +1,6 @@
 # Yaps for Grok Bot and Cursor
 
-**Supercharge Grok Bot and Cursor with powerful local AI tools.** This plugin lets your agent use the [Yaps](https://yaps.ai) desktop app on your own computer. Your recordings, videos, and notes are processed there, not uploaded to a hosted AI service.
+**Supercharge Grok Bot and Cursor with powerful AI tools from Yaps.** By default, this plugin uses the [Yaps](https://yaps.ai) desktop app on your own computer. Your recordings, videos, and notes are processed there. Optional Bot computer setup processes files you give the Bot on its cloud computer.
 
 ## What you can ask for
 
@@ -29,14 +29,14 @@ Every export goes to a new file. Your originals are never overwritten.
 1. [Download Yaps](https://yaps.ai/download) for macOS or Windows, open it, and sign in. New accounts start with a free trial; some features need Yaps Pro.
 2. On Yaps 2.4.0 or older only, install [Node.js](https://nodejs.org) 22 or newer on the same computer (or update Yaps instead).
 3. Install the plugin. In Cursor, run `/add-plugin yaps`. In Grok Bot, open **Plugins** in the sidebar and search for Yaps.
-4. **Grok Bot only:** allow commands on your computer in **Settings > General > Bot > Execution on Local Computer**. Keep the default, **Ask every time**, if you want to approve each command. Yaps is on your computer, not Grok Bot's cloud computer, so the plugin cannot work without this.
+4. **Grok Bot with Yaps on your computer:** allow commands on your computer in **Settings > General > Agent > Execution on Local Computer**. Keep the default, **Ask every time**, if you want to approve each command. This setting is not needed if you choose the optional Bot computer setup below.
 5. Ask your agent to check that Yaps is ready. When a feature needs a model download, the agent tells you the size and asks first.
 
 No API key or separate account is needed.
 
 ### Yaps on Grok Bot's own computer (optional)
 
-Grok Bot also has its own Linux cloud computer. Ask it to "set up Yaps on your computer" and the `yaps-cloud-setup` skill installs the official Yaps Linux package there, after checking its size and SHA-256 against the release manifest, then signs that computer in with a code from a Yaps email. Use it for files you give the Bot. It counts as one of your devices, and work on it runs on that computer, not yours. Ask the Bot to run `auth logout` to remove it.
+Grok Bot also has its own Linux cloud computer. Ask it to "set up Yaps on your computer" and the `yaps-cloud-setup` skill checks the official package's size and SHA-256 before installing it there. Headless sign-in requires a Yaps release that advertises `auth login` and `auth verify`; the current v2.4.0 release does not. The skill stops before asking for your email or code if those commands are unavailable. Once supported, use this path for files you give the Bot. It counts as one of your devices, and work runs on that computer, not yours. Ask the Bot to run `auth logout` to remove it.
 
 ## How it works
 
@@ -50,7 +50,7 @@ npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/c2f69
 
 It accepts the same commands, checks the installed Yaps version, and launches `yaps_cli` directly, never through a shell. It has no dependencies and no install scripts.
 
-**Why it downloads anything.** Grok Bot keeps installed plugin files on its cloud computer, but Yaps runs on your computer, so a command that runs there has to bring the adapter with it. The pin is an immutable commit of this repository, so what runs is exactly the `runtime/` code you can read here, and changing it needs a new plugin release that goes through review again.
+**Why it downloads anything.** Grok Bot keeps installed plugin files on its cloud computer. To run Yaps on your computer, a command there has to bring the adapter with it. The pin is an immutable commit of this repository, so what runs is exactly the `runtime/` code you can read here, and changing it needs a new plugin release that goes through review again.
 
 ### MCP tools
 
@@ -60,7 +60,7 @@ The plugin also declares two MCP servers, `yaps` (transcription, meetings, capti
 
 - **Credentials:** none requested. The adapter reuses your signed-in Yaps app. Its account check reports only whether you have access, never your email or tokens.
 - **Network:** `npx` downloads the adapter and MCP servers from `codeload.github.com` (and the MCP SDK from `registry.npmjs.org`) on first use. Setting Yaps up on Grok Bot's computer downloads the package from `github.com/richawo/yaps-releases`. The Yaps app itself can contact `yaps-api.richardawoyemi.workers.dev` to refresh your account and, only after you agree, to download feature models. See the [Yaps privacy policy](https://yaps.ai/privacy).
-- **Your data:** files stay on your computer. Results you ask for, such as a transcript or note, are shown to your agent and follow its own data handling. The plugin adds no telemetry.
+- **Your data:** files stay on the computer running Yaps. With optional cloud setup, files you give the Bot are processed on its computer. Results you ask for, such as a transcript or note, are shown to your agent and follow its own data handling. The plugin adds no telemetry.
 - **Notes vault:** the memory skill reads or changes notes only when you ask, and never works around a Yaps permission that says no.
 
 ## Support and source

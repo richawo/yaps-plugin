@@ -1,16 +1,16 @@
-# Running Yaps on the user's computer
+# Running Yaps where the work lives
 
-Yaps is a desktop app. Every Yaps command in these skills must run on the
-computer where the user installed and signed in to Yaps. A cloud computer does
-not have Yaps, so a failed probe there proves nothing about the user's install.
+Yaps is a desktop app. Every Yaps command must run on the computer where Yaps
+is installed and signed in. A cloud computer does not have access to the
+user's desktop installation, so a failed probe there proves nothing about it.
 
 - **Cursor:** run commands in the local terminal as usual.
-- **Grok Bot:** run each Yaps command with **local-computer execution**, so it
-  runs on the user's own Mac or Windows PC and the user sees and approves the
-  exact command. The setting is **Settings > General > Bot > Execution on
-  Local Computer**. If local execution is off or a command is declined, say so
-  and stop. Never run Yaps commands on the cloud computer instead, and never
-  copy the user's files to the cloud computer to work around it.
+- **Grok Bot with Yaps on the user's computer:** run each Yaps command with
+  **local-computer execution**, so it runs on the user's own Mac or Windows PC
+  and the user sees and approves the exact command. The setting is **Settings >
+  General > Agent > Execution on Local Computer**. If local execution is off or a
+  command is declined, say so and stop. Never copy the user's files to the
+  cloud computer to work around it.
 
 ## Where Yaps runs
 
