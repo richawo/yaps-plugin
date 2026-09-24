@@ -41,7 +41,9 @@ Each skill tells the agent to run one command on your computer:
 npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/3919104633affd35d45dd0d29cb9c62a6c218eb4 yaps-agent -- <Yaps arguments>
 ```
 
-That fetches this repository's own adapter (`runtime/`) from one pinned commit. The adapter has no dependencies and no install scripts. It finds the Yaps command-line tool that ships with the desktop app, checks its version, and runs it with the arguments the skill chose. It launches that tool directly, never through a shell, and the skills pass your text as JSON on stdin rather than splicing it into a command.
+That fetches this repository's own adapter (`runtime/`) from one pinned commit.
+
+**Why it downloads anything.** Grok Bot keeps installed plugin files on its cloud computer, but Yaps runs on your computer, so the command that runs there has to bring the adapter with it. The pin is an immutable commit of this repository, so what runs is exactly the `runtime/` code you can read here, and changing it needs a new plugin release that goes through review again. The adapter has no dependencies and no install scripts. It finds the Yaps command-line tool that ships with the desktop app, checks its version, and runs it with the arguments the skill chose. It launches that tool directly, never through a shell, and the skills pass your text as JSON on stdin rather than splicing it into a command.
 
 ## Privacy and permissions
 
