@@ -5,7 +5,7 @@ description: "Translate text or subtitle files with Yaps. Keep the original and 
 
 # Yaps Translation
 
-Read [the runtime guide](references/runtime.md) before the first operation. It defines `<adapter>`, `<yaps>`, account readiness, local permissions, and file handling.
+Read [the runtime guide](references/runtime.md) before the first operation. It defines `<yaps>`, account readiness, local permissions, and file handling.
 
 Required Yaps version: 2.3.124 or newer. Check installed command help for later capabilities.
 

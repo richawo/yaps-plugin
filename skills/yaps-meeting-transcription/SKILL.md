@@ -5,7 +5,7 @@ description: "Make a meeting transcript with speaker labels in Yaps. Correct it,
 
 # Yaps Meeting Transcription
 
-Read [the runtime guide](references/runtime.md) before the first operation. It defines `<adapter>`, `<yaps>`, account readiness, local permissions, and file handling.
+Read [the runtime guide](references/runtime.md) before the first operation. It defines `<yaps>`, account readiness, local permissions, and file handling.
 
 Required Yaps version: 2.3.124 or newer. Check installed command help for later capabilities.
 
@@ -13,7 +13,7 @@ Feature readiness: Meeting/Sherpa; optional MOSS on supported Apple Silicon syst
 
 ## Workflow
 
-Build a JSON request with an absolute `input`, optional `title`, `engine` (default `auto`), and optional integer `speakers` from 1 to 20. Run `<adapter> meeting-file -` with that JSON on stdin, as shown in the runtime guide. The helper extracts a temporary WAV for recognized video types through Yaps, then creates the durable meeting project; Yaps retains its own project audio.
+Build a JSON request with an absolute `input`, optional `title`, `engine` (default `auto`), and optional integer `speakers` from 1 to 20. Run `<yaps> request -` with that JSON on stdin, adding `"workflow": "meeting-file"` (see the runtime guide). The helper extracts a temporary WAV for recognized video types through Yaps, then creates the durable meeting project; Yaps retains its own project audio.
 
 Use `auto` by default. Use `sherpa` for cross-platform execution or a supplied speaker count. Use `moss` only when installed and supported on Apple Silicon; it detects speakers itself and cannot take a speaker-count hint. Treat the returned engine and reason as authoritative. A project with no transcript segments is not a successful meeting.
 

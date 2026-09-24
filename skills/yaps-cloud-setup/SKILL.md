@@ -5,7 +5,7 @@ description: "Set up Yaps on Grok Bot's own Linux computer so the Bot can transc
 
 # Set up Yaps on the Bot's computer
 
-Read [the runtime guide](references/runtime.md) first. It defines `<adapter>` and `<yaps>`.
+Read [the runtime guide](references/runtime.md) first. It defines `<adapter>`, `<yaps-cli>`, and `<yaps>`.
 
 Use this skill only when the user asks for Yaps on the Bot's own cloud computer, for example to process files they uploaded to the Bot, or accepts your offer to set it up. For files on the user's own computer, use local-computer execution instead and do not install anything here.
 
@@ -30,12 +30,12 @@ Run these on the Bot's own computer with normal command execution, not local-com
 
    `needs_root` means the Bot's computer does not allow passwordless root; explain that and stop. `unsupported_platform` or `unsupported_distribution` means this computer cannot run the Linux package.
 
-2. Check the installed version supports a sign-in without the app window: `<yaps> auth --help` must list `login` and `verify`. If it does not, say that this needs a newer Yaps than 2.4.0 and stop.
+2. From here, `<yaps>` means `/usr/bin/yaps_cli` (check it with `/usr/bin/yaps_cli request --help`). Signing in without the app window needs `/usr/bin/yaps_cli auth --help` to list `login` and `verify`. If it does not, say that this needs a newer Yaps than 2.4.0 and stop.
 
 3. Ask the user for the email address of their Yaps account, then send the code. Pass the address in a JSON request, never spliced into the command:
 
    ```text
-   <adapter> --args-file - <<'YAPS_REQUEST'
+   <yaps> request - <<'YAPS_REQUEST'
    ["auth", "login", "--email", "their address exactly as given"]
    YAPS_REQUEST
    ```
@@ -45,14 +45,14 @@ Run these on the Bot's own computer with normal command execution, not local-com
 4. Ask the user for the code from the email, then finish signing in:
 
    ```text
-   <adapter> --args-file - <<'YAPS_REQUEST'
+   <yaps> request - <<'YAPS_REQUEST'
    ["auth", "verify", "--email", "their address", "--code", "123456"]
    YAPS_REQUEST
    ```
 
    Use the code once. Do not repeat it back, save it, or write it to any file.
 
-5. Run `<yaps> auth status --pretty` and `<yaps> features list --pretty`. If the status is not `active`, the account needs an active trial or Yaps Pro; send the user to Yaps to check. Then carry on with the task that needed Yaps.
+5. Run `<yaps> auth status --redact` and `<yaps> features list --pretty`. If the status is not `active`, the account needs an active trial or Yaps Pro; send the user to Yaps to check. Then carry on with the task that needed Yaps.
 
 ## Afterwards
 

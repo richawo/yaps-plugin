@@ -5,7 +5,7 @@ description: "Shorten a talking-head video with Yaps Auto Cut. Review the pauses
 
 # Yaps Auto Cut
 
-Read [the runtime guide](references/runtime.md) before the first operation. It defines `<adapter>`, `<yaps>`, account readiness, local permissions, and file handling.
+Read [the runtime guide](references/runtime.md) before the first operation. It defines `<yaps>`, account readiness, local permissions, and file handling.
 
 Required Yaps version: 2.3.848 or newer. Check installed command help for later capabilities.
 

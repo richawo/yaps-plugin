@@ -29,55 +29,71 @@ If `yaps_status` or `<yaps> status` says Yaps is unreachable on the Bot's
 computer, Yaps is not set up there: use the user's computer, or offer
 `yaps-cloud-setup` when the files are already on the Bot's computer.
 
-## The adapter
+## Running Yaps
 
-Every example beginning with `<adapter>` means:
+`<yaps-cli>` is the command-line tool installed with the Yaps app:
+
+| System | Path |
+| --- | --- |
+| macOS | `/Applications/Yaps.app/Contents/MacOS/yaps_cli`, or the same under `~/Applications` |
+| Windows | `C:\Program Files\Yaps\yaps_cli.exe` |
+| Linux | `/usr/bin/yaps_cli` |
+
+Once per session, on the computer where the work will run, check it:
+`"<yaps-cli>" request --help`.
+
+- If that prints help, `<yaps>` means `"<yaps-cli>"`. Nothing else needs to be
+  installed.
+- If the tool is missing that command (Yaps 2.4.0 and older), `<yaps>` means
+  the adapter below. It finds and checks the installed Yaps itself, and needs
+  Node.js 22 or newer. If Node is missing too, suggest updating Yaps from
+  [yaps.ai/download](https://yaps.ai/download), which removes the need for it.
+  Do not install Node silently.
+- If neither works, Yaps is not reachable from where the command ran; see
+  "Where Yaps runs" above.
+
+`<adapter>` always means this command. `yaps-cloud-setup` uses it before Yaps
+is installed:
 
 ```text
-npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/f3e1be8b74e4a9ba2784a8fb846b2994c11f6cf9 yaps-agent
+npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/c2f69d86c2bbbe0c8bda901f77cf26671f8ad051 yaps-agent
 ```
 
-and `<yaps>` means `<adapter> --`, followed by Yaps arguments.
-
-The command fetches this plugin's own adapter from one pinned public commit of
+It fetches this plugin's own adapter from one pinned public commit of
 [github.com/richawo/yaps-plugin](https://github.com/richawo/yaps-plugin). It
-has no dependencies and no install scripts. Node.js 22 or newer must be
-installed on the user's computer. If Node is missing, explain the dependency
-and link [nodejs.org](https://nodejs.org). Do not install it silently.
+has no dependencies and no install scripts, and it accepts exactly the same
+commands as a current `yaps_cli`, so the skills can simply say `<yaps>`.
 
-The adapter validates the installed Yaps CLI using an existing
-`YAPS_CLI_BINARY` override, then PATH and verified application locations. It
-does not invoke a shell or the macOS GUI executable. Do not search for a
-different binary or run raw `auth status` to bypass its version checks.
+Never search for other Yaps binaries. On the user's computer, check the account
+with `<yaps> auth status --redact`, never plain `auth status`.
 
 ## Passing text and requests safely
 
 Never interpolate the user's text, filenames, or other untrusted content into
-a shell command. Put it in a JSON request and pass it on stdin with `-`, using
-a heredoc whose delimiter is quoted so nothing inside is expanded.
-
-A JSON array of Yaps arguments (without the executable name):
+a shell command. Put the command in a JSON request and pass it on stdin, using
+a heredoc whose delimiter is quoted so nothing inside is expanded:
 
 ```text
-<adapter> --args-file - <<'YAPS_REQUEST'
+<yaps> request - <<'YAPS_REQUEST'
 ["translate", "--text", "Text exactly as the user wrote it", "--to", "fr", "--pretty"]
 YAPS_REQUEST
 ```
 
-A workflow request object, where a skill says `<request.json>`:
+The array holds the arguments only, without the executable name. Where a skill
+names a workflow, send an object instead:
 
 ```text
-<adapter> transcribe-file - <<'YAPS_REQUEST'
-{"input": "/Users/me/Recordings/Interview.m4a", "output": "/Users/me/Recordings/Interview Transcript.txt"}
+<yaps> request - <<'YAPS_REQUEST'
+{"workflow": "transcribe-file", "input": "/Users/me/Recordings/Interview.m4a", "output": "/Users/me/Recordings/Interview Transcript.txt"}
 YAPS_REQUEST
 ```
 
-In Windows PowerShell, pipe a single-quoted here-string instead:
-`@'` on its own line, the JSON, `'@` on its own line, then `| <adapter> --args-file -`.
+In Windows PowerShell, pipe a single-quoted here-string instead: `@'` on its
+own line, the JSON, `'@` on its own line, then `| & "<yaps-cli>" request -`.
 
-A private temporary request file on the user's computer also works. Remove it
-after the command. Prefer `--text-file` or `--markdown-file` for substantial
-content when the installed command offers it.
+Arguments that contain no user-supplied text can be passed directly, for
+example `<yaps> features list --pretty`. Prefer `--text-file` or
+`--markdown-file` for substantial content when the command offers it.
 
 ## Reachability and onboarding
 
@@ -85,14 +101,14 @@ content when the installed command offers it.
    the Yaps app on the user's computer. Check that the command ran there, not
    on a cloud computer. Offer [Download or open Yaps](https://yaps.ai/download)
    and retry. Do not ask for an API key or claim an account was created.
-2. Run `<yaps> auth status --pretty`. The adapter returns sanitized account
-   readiness, never an email, token, billing date, or internal plan ID.
+2. Run `<yaps> auth status --redact`. It returns account readiness only,
+   never an email, token, billing date, or internal plan ID.
    Gated tasks need a signed-in account with an active free trial or Yaps Pro.
    If access is missing, direct the user to sign in and check access inside
    Yaps. Only Yaps can determine trial eligibility. Never start a trial or
    checkout on the user's behalf.
-3. The adapter requires credential-safe Yaps 2.3.124 or newer; some workflows
-   need a newer version. It follows canonical settings and may request a
+3. Yaps 2.3.124 or newer is required; some workflows need a newer
+   version. It follows canonical settings and may request a
    bounded desktop account-cache refresh. Do not copy credentials, approve
    Keychain prompts, or reinterpret a failed entitlement as a request to
    reconnect an agent integration.
@@ -131,7 +147,7 @@ items) and run `<yaps> batch <manifest.jsonl> --wait`. In the foreground,
 `{"error","error_code"}` on stdout; exit 4 means the output already exists and
 130 means the run was cancelled.
 
-The adapter writes no diagnostic logs, credentials, or MCP configuration. Yaps
+Neither `yaps_cli` nor the adapter writes diagnostic logs, credentials, or MCP configuration. Yaps
 retains its normal project, history, and usage state, and its entitlement
 refresh may use the network. Content read into the conversation is subject to
 the agent host's own data handling. Local processing does not mean the agent

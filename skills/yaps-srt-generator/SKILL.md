@@ -5,7 +5,7 @@ description: "Make a timed SRT subtitle file from audio or video with Yaps. New 
 
 # Yaps Subtitle Generator
 
-Read [the runtime guide](references/runtime.md) before the first operation. It defines `<adapter>`, `<yaps>`, account readiness, local permissions, and file handling.
+Read [the runtime guide](references/runtime.md) before the first operation. It defines `<yaps>`, account readiness, local permissions, and file handling.
 
 Required Yaps version: 2.3.124 or newer. Check installed command help for later capabilities.
 
@@ -13,7 +13,7 @@ Feature readiness: Subtitles/Whisper, enabled through features subtitles --enabl
 
 ## Workflow
 
-Choose a new absolute `<source> Subtitles.srt` path. Build a JSON request object with `input` and `output` absolute paths. Run `<adapter> srt-file -` with that JSON on stdin, as shown in the runtime guide. This adapter generates into owned temporary storage, checks numbered cues and ordered positive timings, then atomically publishes without replacing an existing destination, including one created during inference. Do not use raw `srt generate --output` for delivery: the installed CLI can overwrite an existing file.
+Choose a new absolute `<source> Subtitles.srt` path. Build a JSON request object with `input` and `output` absolute paths. Run `<yaps> request -` with that JSON on stdin, adding `"workflow": "srt-file"` (see the runtime guide). This adapter generates into owned temporary storage, checks numbered cues and ordered positive timings, then atomically publishes without replacing an existing destination, including one created during inference. Do not use raw `srt generate --output` for delivery: the installed CLI can overwrite an existing file.
 
 Confirm the output is non-empty and inspect its actual content. Check first, middle, and final cues against the source when review is requested; timestamps alone do not prove words are correct. Return the subtitle file with engine, duration, and word count from Yaps. Report silence or coded failures accurately.
 

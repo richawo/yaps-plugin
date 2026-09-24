@@ -5,7 +5,7 @@ description: "Turn an audio or video file into text with Yaps. Good for intervie
 
 # Yaps Transcription
 
-Read [the runtime guide](references/runtime.md) before the first operation. It defines `<adapter>`, `<yaps>`, account readiness, local permissions, and file handling.
+Read [the runtime guide](references/runtime.md) before the first operation. It defines `<yaps>`, account readiness, local permissions, and file handling.
 
 Required Yaps version: 2.3.124 or newer. Check installed command help for later capabilities.
 
@@ -13,7 +13,7 @@ Feature readiness: Subtitles/Whisper: inspect features list; install with featur
 
 ## Workflow
 
-Choose a new `.txt` destination beside the input, such as `Interview Transcript.txt`. Build a JSON request containing `input` and `output`, both absolute paths. Run `<adapter> transcribe-file -` with that JSON on stdin, as shown in the runtime guide.
+Choose a new `.txt` destination beside the input, such as `Interview Transcript.txt`. Build a JSON request containing `input` and `output`, both absolute paths. Run `<yaps> request -` with that JSON on stdin, adding `"workflow": "transcribe-file"` (see the runtime guide).
 
 The helper uses Yaps's `srt generate` engine, stages its SRT in an owned temporary directory, and exports the returned plain transcript. It exclusively publishes a completed text file, refuses replacement, rejects blank speech, and removes the temporary SRT. It does not require Python.
 

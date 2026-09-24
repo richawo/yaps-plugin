@@ -27,7 +27,7 @@ Every export goes to a new file. Your originals are never overwritten.
 ## Setup
 
 1. [Download Yaps](https://yaps.ai/download) for macOS or Windows, open it, and sign in. New accounts start with a free trial; some features need Yaps Pro.
-2. Install [Node.js](https://nodejs.org) 22 or newer on the same computer.
+2. On Yaps 2.4.0 or older only, install [Node.js](https://nodejs.org) 22 or newer on the same computer (or update Yaps instead).
 3. Install the plugin. In Cursor, run `/add-plugin yaps`. In Grok Bot, open **Plugins** in the sidebar and search for Yaps.
 4. **Grok Bot only:** allow commands on your computer in **Settings > General > Bot > Execution on Local Computer**. Keep the default, **Ask every time**, if you want to approve each command. Yaps is on your computer, not Grok Bot's cloud computer, so the plugin cannot work without this.
 5. Ask your agent to check that Yaps is ready. When a feature needs a model download, the agent tells you the size and asks first.
@@ -40,15 +40,17 @@ Grok Bot also has its own Linux cloud computer. Ask it to "set up Yaps on your c
 
 ## How it works
 
-Each skill tells the agent to run one command on your computer:
+The skills run the Yaps command-line tool that ships inside the app (`yaps_cli`). With a current Yaps, nothing else is needed: the agent passes your text to it as JSON on stdin, never splicing it into a command line.
+
+On Yaps 2.4.0 and older, the skills fall back to this repository's adapter, run with Node.js 22 or newer:
 
 ```text
-npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/f3e1be8b74e4a9ba2784a8fb846b2994c11f6cf9 yaps-agent -- <Yaps arguments>
+npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/c2f69d86c2bbbe0c8bda901f77cf26671f8ad051 yaps-agent <Yaps arguments>
 ```
 
-That fetches this repository's own adapter (`runtime/`) from one pinned commit.
+It accepts the same commands, checks the installed Yaps version, and launches `yaps_cli` directly, never through a shell. It has no dependencies and no install scripts.
 
-**Why it downloads anything.** Grok Bot keeps installed plugin files on its cloud computer, but Yaps runs on your computer, so the command that runs there has to bring the adapter with it. The pin is an immutable commit of this repository, so what runs is exactly the `runtime/` code you can read here, and changing it needs a new plugin release that goes through review again. The adapter has no dependencies and no install scripts. It finds the Yaps command-line tool that ships with the desktop app, checks its version, and runs it with the arguments the skill chose. It launches that tool directly, never through a shell, and the skills pass your text as JSON on stdin rather than splicing it into a command.
+**Why it downloads anything.** Grok Bot keeps installed plugin files on its cloud computer, but Yaps runs on your computer, so a command that runs there has to bring the adapter with it. The pin is an immutable commit of this repository, so what runs is exactly the `runtime/` code you can read here, and changing it needs a new plugin release that goes through review again.
 
 ### MCP tools
 
