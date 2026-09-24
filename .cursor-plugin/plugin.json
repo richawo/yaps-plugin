@@ -31,5 +31,6 @@
     "local-ai",
     "productivity"
   ],
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json"
 }

@@ -12,12 +12,29 @@ not have Yaps, so a failed probe there proves nothing about the user's install.
   and stop. Never run Yaps commands on the cloud computer instead, and never
   copy the user's files to the cloud computer to work around it.
 
+## Where Yaps runs
+
+Yaps can be on the user's own computer, on the Bot's own cloud computer (after
+the `yaps-cloud-setup` skill), or both. Choose by where the work lives:
+
+- Files, notes, recordings, and dictation history on the user's computer: run
+  the commands there (Grok Bot: local-computer execution).
+- Files the user gave the Bot, with Yaps set up on the Bot's computer: run the
+  same commands there with normal command execution, or use the plugin's MCP
+  tools (`yaps_status`, `transcribe_media`, `captions_render`, `vault_search`,
+  and the rest), which run on whichever computer hosts the plugin.
+- Never copy the user's private files to the cloud computer just to reach Yaps.
+
+If `yaps_status` or `<yaps> status` says Yaps is unreachable on the Bot's
+computer, Yaps is not set up there: use the user's computer, or offer
+`yaps-cloud-setup` when the files are already on the Bot's computer.
+
 ## The adapter
 
 Every example beginning with `<adapter>` means:
 
 ```text
-npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/3919104633affd35d45dd0d29cb9c62a6c218eb4 yaps-agent
+npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/f3e1be8b74e4a9ba2784a8fb846b2994c11f6cf9 yaps-agent
 ```
 
 and `<yaps>` means `<adapter> --`, followed by Yaps arguments.
@@ -100,6 +117,19 @@ process and observe it. A host timeout does not establish cancellation or
 failure: inspect the process, project, and output before retrying. Do not
 duplicate a job just because it produced no interim text. Saved Yaps projects
 remain in Yaps after a failed export; inspect them before another attempt.
+
+When `<yaps> --help` lists `jobs` and `batch`, prefer a background job for
+long media or long text: add `--detach` to the command, which prints a
+`job_id` at once, then run `<yaps> jobs wait <job-id> --timeout-secs 90`
+(shorter than the host's command timeout) and `<yaps> jobs result <job-id>`.
+A `timed_out` wait means the job is still running: wait again rather than
+starting another. `jobs events <job-id>` shows progress and `jobs cancel
+<job-id>` stops it cleanly. For many files, put one argument array per line in
+a JSONL manifest (`{"args":[...],"key":"<name>"}` lets a re-run skip finished
+items) and run `<yaps> batch <manifest.jsonl> --wait`. In the foreground,
+`YAPS_CLI_PROGRESS=json` prints NDJSON progress on stderr. Failures print
+`{"error","error_code"}` on stdout; exit 4 means the output already exists and
+130 means the run was cancelled.
 
 The adapter writes no diagnostic logs, credentials, or MCP configuration. Yaps
 retains its normal project, history, and usage state, and its entitlement
