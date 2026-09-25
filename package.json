@@ -1,6 +1,6 @@
 {
   "name": "yaps-agent",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Local adapter that lets Grok Bot and Cursor run the installed Yaps desktop app's tools.",
   "type": "module",
   "bin": {
