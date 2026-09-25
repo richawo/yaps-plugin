@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2
+
+- Run the adapter correctly when an agent installs it through a file or directory symlink.
+- Include the same verified adapter fix as the portable skills.
+
 ## 1.0.1
 
 - Clearer setup and account requirements for new users.

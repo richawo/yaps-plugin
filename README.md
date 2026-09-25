@@ -45,7 +45,7 @@ The skills run the Yaps command-line tool that ships inside the app (`yaps_cli`)
 When the installed CLI does not support `request`, the skills use this repository's adapter with Node.js 22 or newer:
 
 ```text
-npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/b3e00c4e1d25e8b55aba8ff0a6e970a35048e692 yaps-agent <Yaps arguments>
+npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/89f35bbfce9cf3e4f13f1ea8ac03ee3657db1a1a yaps-agent <Yaps arguments>
 ```
 
 It accepts the same commands, checks the installed Yaps version, and launches `yaps_cli` directly, never through a shell. It has no dependencies and no install scripts.

@@ -55,7 +55,7 @@ Once per session, on the computer where the work will run, check it:
 is installed:
 
 ```text
-npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/b3e00c4e1d25e8b55aba8ff0a6e970a35048e692 yaps-agent
+npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/89f35bbfce9cf3e4f13f1ea8ac03ee3657db1a1a yaps-agent
 ```
 
 It fetches this plugin's own adapter from one pinned public commit of
