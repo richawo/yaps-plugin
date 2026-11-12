@@ -16,6 +16,65 @@ export class AdapterError extends Error {
   }
 }
 
+// Pass only settings needed by installed native helpers. Do not give a local
+// subprocess unrelated agent credentials, injection flags, or another host's
+// MCP identity/consent merely because they exist in the parent environment.
+const CHILD_ENV_KEYS = [
+  "PATH", "Path", "PATHEXT", "HOME", "USERPROFILE", "HOMEDRIVE", "HOMEPATH",
+  "APPDATA", "LOCALAPPDATA", "ProgramFiles", "ProgramFiles(x86)", "ProgramW6432",
+  "SystemRoot", "SYSTEMROOT", "WINDIR", "COMSPEC", "ComSpec",
+  "TMPDIR", "TMP", "TEMP", "LANG", "LANGUAGE", "LC_ALL", "LC_CTYPE", "TZ",
+  "XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME", "XDG_RUNTIME_DIR",
+  "DISPLAY", "WAYLAND_DISPLAY", "DBUS_SESSION_BUS_ADDRESS",
+  "YAPS_CLI_BINARY", "YAPS_INSTALL_DIR", "YAPS_MCP_BINARY", "YAPS_SETTINGS_PATH", "YAPS_VAULT_ROOT",
+  "YAPS_CLI_PROGRESS",
+];
+
+export function nativeChildEnvironment(source) {
+  source ??= {
+    "PATH": process.env["PATH"],
+    "Path": process.env["Path"],
+    "PATHEXT": process.env["PATHEXT"],
+    "HOME": process.env["HOME"],
+    "USERPROFILE": process.env["USERPROFILE"],
+    "HOMEDRIVE": process.env["HOMEDRIVE"],
+    "HOMEPATH": process.env["HOMEPATH"],
+    "APPDATA": process.env["APPDATA"],
+    "LOCALAPPDATA": process.env["LOCALAPPDATA"],
+    "ProgramFiles": process.env["ProgramFiles"],
+    "ProgramFiles(x86)": process.env["ProgramFiles(x86)"],
+    "ProgramW6432": process.env["ProgramW6432"],
+    "SystemRoot": process.env["SystemRoot"],
+    "SYSTEMROOT": process.env["SYSTEMROOT"],
+    "WINDIR": process.env["WINDIR"],
+    "COMSPEC": process.env["COMSPEC"],
+    "ComSpec": process.env["ComSpec"],
+    "TMPDIR": process.env["TMPDIR"],
+    "TMP": process.env["TMP"],
+    "TEMP": process.env["TEMP"],
+    "LANG": process.env["LANG"],
+    "LANGUAGE": process.env["LANGUAGE"],
+    "LC_ALL": process.env["LC_ALL"],
+    "LC_CTYPE": process.env["LC_CTYPE"],
+    "TZ": process.env["TZ"],
+    "XDG_CONFIG_HOME": process.env["XDG_CONFIG_HOME"],
+    "XDG_DATA_HOME": process.env["XDG_DATA_HOME"],
+    "XDG_CACHE_HOME": process.env["XDG_CACHE_HOME"],
+    "XDG_RUNTIME_DIR": process.env["XDG_RUNTIME_DIR"],
+    "DISPLAY": process.env["DISPLAY"],
+    "WAYLAND_DISPLAY": process.env["WAYLAND_DISPLAY"],
+    "DBUS_SESSION_BUS_ADDRESS": process.env["DBUS_SESSION_BUS_ADDRESS"],
+    "YAPS_CLI_BINARY": process.env["YAPS_CLI_BINARY"],
+    "YAPS_INSTALL_DIR": process.env["YAPS_INSTALL_DIR"],
+    "YAPS_MCP_BINARY": process.env["YAPS_MCP_BINARY"],
+    "YAPS_SETTINGS_PATH": process.env["YAPS_SETTINGS_PATH"],
+    "YAPS_VAULT_ROOT": process.env["YAPS_VAULT_ROOT"],
+    "YAPS_CLI_PROGRESS": process.env["YAPS_CLI_PROGRESS"],
+  };
+  return Object.fromEntries(CHILD_ENV_KEYS.flatMap((key) =>
+    typeof source[key] === "string" ? [[key, source[key]]] : []));
+}
+
 export function validateArguments(args) {
   if (!Array.isArray(args) || !args.length || args.length > 512
       || args.some((arg) => typeof arg !== "string" || arg.includes("\0"))
@@ -25,8 +84,9 @@ export function validateArguments(args) {
   return [...args];
 }
 
-export async function prepareInvocation(args, discovery, env = process.env) {
+export async function prepareInvocation(args, discovery, env) {
   args = validateArguments(args);
+  env = nativeChildEnvironment(env);
   const authStatus = discovery.isAuthStatusCommand(args);
   const gated = discovery.commandRequiresActiveAccount(args);
   const session = await discovery.resolveYapsSession({
@@ -61,18 +121,19 @@ export async function prepareInvocation(args, discovery, env = process.env) {
   }
   return {
     command: session.path,
-    args: discovery.applyResolvedSettings(args, session.settingsPath, { env }),
-    // Do not inherit an identity or automatic MCP consent from another host.
-    env: Object.fromEntries(Object.entries(env).filter(([key]) =>
-      !key.startsWith("YAPS_MCP_") && !key.startsWith("YAPS_PLUGIN_"))),
+    args: discovery.applyResolvedSettings(args, session.settingsPath, {
+      env,
+      followDesktopAccount: session.auth?.diagnosticCode === "followed_desktop_account",
+    }),
+    env,
   };
 }
 
-export function runProcess(command, args, { env = process.env, capture = false, signal } = {}) {
+export function runProcess(command, args, { env, capture = false, signal } = {}) {
   return new Promise((accept, reject) => {
     if (signal?.aborted) return reject(new AdapterError("cancelled", "The Yaps operation was cancelled.", 130));
     const child = spawn(command, args, {
-      env, shell: false, windowsHide: true,
+      env: nativeChildEnvironment(env), shell: false, windowsHide: true,
       stdio: capture ? ["ignore", "pipe", "pipe"] : "inherit",
     });
     let bytes = 0;
@@ -130,9 +191,16 @@ export async function runYaps(args, { discovery, capture = false, allowArray = f
   }
   if (execution.code !== 0 || !result || (Array.isArray(result) && !allowArray) || typeof result !== "object"
       || result.error || result.success === false) {
-    const safeCode = typeof result?.error_code === "string" && /^[a-z0-9_]{1,80}$/.test(result.error_code)
+    let safeCode = typeof result?.error_code === "string" && /^[a-z0-9_]{1,80}$/.test(result.error_code)
       ? result.error_code : "engine_failed";
-    throw new AdapterError(safeCode, `Yaps did not complete the operation (${safeCode}). No successful result was recorded.`, safeCode === "cancelled" ? 130 : exitCode);
+    // Older CLI versions use the generic "error" code for a missing model.
+    // Preserve an actionable code without forwarding paths or the raw error text.
+    if (["error", "engine_failed"].includes(safeCode) && typeof result?.error === "string"
+        && /\bnot (?:installed|downloaded)\b/i.test(result.error)) safeCode = "model_not_installed";
+    const guidance = safeCode === "model_not_installed"
+      ? "This feature needs a model installed in Yaps. Open Features on your computer, finish setup, then try again."
+      : `Yaps did not complete the operation (${safeCode}). No successful result was recorded.`;
+    throw new AdapterError(safeCode, guidance, safeCode === "cancelled" ? 130 : exitCode);
   }
   return result;
 }
