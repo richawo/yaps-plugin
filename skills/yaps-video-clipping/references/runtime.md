@@ -55,7 +55,7 @@ Once per session, on the computer where the work will run, check it:
 is installed:
 
 ```text
-npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/89f35bbfce9cf3e4f13f1ea8ac03ee3657db1a1a yaps-agent
+npx --yes --package https://codeload.github.com/richawo/yaps-plugin/tar.gz/2d0da70cd6151a2b44f964cb7b33301bf8199386 yaps-agent
 ```
 
 It fetches this plugin's own adapter from one pinned public commit of
@@ -103,9 +103,12 @@ example `<yaps> features list --pretty`. Prefer `--text-file` or
 2. Run `<yaps> auth status --redact`. It returns account readiness only,
    never an email, token, billing date, or internal plan ID.
    Gated tasks need a signed-in account with an active free trial or Yaps Pro.
-   If access is missing, direct the user to sign in and check access inside
-   Yaps. Only Yaps can determine trial eligibility. Never start a trial or
-   checkout on the user's behalf.
+   For `desktop_account_unavailable`, open Yaps and retry in a local session
+   under the same operating system account. If Yaps already shows active access,
+   keep the current sign-in and trial or Yaps Pro access. If Yaps itself shows
+   the user as signed out, direct them to sign in there.
+   Direct expired access to the Yaps account screen. Only Yaps can determine
+   trial eligibility. Never start a trial or checkout on the user's behalf.
 3. Yaps 2.3.124 or newer is required; some workflows need a newer
    version. It follows canonical settings and may request a
    bounded desktop account-cache refresh. Do not copy credentials, approve

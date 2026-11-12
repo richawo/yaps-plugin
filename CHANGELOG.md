@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.3
+
+- Follow the running Windows Yaps app for account checks and local commands.
+- Preserve the existing sign-in when a session cannot read the desktop account.
+
 ## 1.0.2
 
 - Run the adapter correctly when an agent installs it through a file or directory symlink.
